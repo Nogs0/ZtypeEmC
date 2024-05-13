@@ -6,11 +6,11 @@
 int bytesInFile = 0;
 unsigned int bytesRead = 0;
 char buffer[MAXBUFF] = "";
- 
-typedef struct pipe1Data {
-    char string[15];
-    int pid;
-} pipe1Data;
+int pidPai;
+
+void recv_sig(int sig){
+
+}
 
 int main()
 {
@@ -22,6 +22,7 @@ int main()
         exit(0);
     }
 
+    pidPai = getpid();
     //   Fork para criar o processo filho
     if ((descritor = fork()) < 0){
         printf("We can't execute FORK\n");
@@ -32,11 +33,12 @@ int main()
         close(pipe1[0]); // fecha leitura no pipe1
         while(1){
             readFromFile(FILE_PATH);
-            send(pipe1[1], buffer);
+            send(pipe1[1], buffer); 
+            signal(SIGUSR1, recv_sig);
+            pause();
         }
         
         close(pipe1[1]); // fecha pipe1
-        exit(0);
 
     } // FIM DO PROCESSO PAI
     else // PROCESSO FILHO
@@ -44,14 +46,14 @@ int main()
         close(pipe1[1]); // fecha escrita no pipe1
 
         while(1){
-        char buff[15] = "";
+            char buff[15] = "";
             read(pipe1[0], buff, 15);
             printf(" \n  Received <- %s", buff);
-            sleep(2);
+            sleep(5);
+            kill(pidPai, SIGUSR1);
         }
 
         close(pipe1[0]); // fecha leitura no pipe1
-        exit(0);
 
     } // FIM DO PROCESSO FILHO
 }
@@ -71,7 +73,6 @@ void readFromFile() {
     }
     
     if(bytesRead < bytesInFile){
-        sleep(2);
         fseek(pFile, bytesRead, 0);
         fgets(buffer, 15, pFile);
         bytesRead += strlen(buffer);
