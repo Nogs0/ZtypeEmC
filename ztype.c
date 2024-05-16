@@ -45,14 +45,25 @@ int main()
     {
         close(pipe1[1]); // fecha escrita no pipe1
 
-        while(1){
-            char buff[15] = "";
-            read(pipe1[0], buff, 15);
-            printf(" \n  Received <- %s", buff);
-            sleep(5);
-            kill(pidPai, SIGUSR1);
+    // system ("/bin/stty raw");
+    while(1){
+        printf("\e[1;1H\e[2J");
+        char buff[16] = "";
+        read(pipe1[0], buff, 15);
+        char stringToTest[15] = "";
+        trataPalavra(buff, stringToTest);
+
+        printf("%s\n", stringToTest);
+        char c = '\0';
+        while(testaDigito(buff, stringToTest, (c = getchar())) == 1){
+            if (c != '\n'){
+                printf("\e[1;1H\e[2J");
+                printf("%s\n", stringToTest);
+            }
         }
 
+        kill(pidPai, SIGUSR1); // acorda pai
+    }
         close(pipe1[0]); // fecha leitura no pipe1
 
     } // FIM DO PROCESSO FILHO
@@ -83,4 +94,30 @@ void readFromFile() {
 
 void send(int writeFd, char *stringToSend){
     write(writeFd, stringToSend, strlen(stringToSend));
+}
+
+void trataPalavra(char *word, char *returnWord) {
+    for (int i = 0; i < strlen(word); i++){
+        if(word[i] == '\n'){
+            word[i] = '\0'; 
+            returnWord[i] = '\0'; 
+            break;
+        }
+        word[i] = toupper(word[i]);
+        returnWord[i] = toupper(word[i]);
+    }
+}
+
+int testaDigito(char *baseWord, char *testWord, char readChar){
+    if(strlen(baseWord) == 0){
+        return 0;
+    }
+    if (baseWord[0] == toupper(readChar)){
+        testWord[(strlen(testWord) - 1) - (strlen(baseWord) - 1)] = '*';
+        for (int i = 0; i < strlen(baseWord); i++){
+            baseWord[i] = baseWord[i + 1];
+        }
+    }
+
+    return 1;
 }
