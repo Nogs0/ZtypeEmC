@@ -121,3 +121,42 @@ int testaDigito(char *baseWord, char *testWord, char readChar){
 
     return 1;
 }
+
+Queue *createQueue(){
+    // Inicializa fila vazia
+    Queue* temp = (Queue*)malloc(sizeof(Queue));
+    temp->first = temp->last = NULL;
+    return temp;
+}
+
+void insert(Queue* q, char *input_word){
+    Node* temp = (Node*)malloc(sizeof(Node));
+    memset(temp->word, '\0', sizeof(temp->word));
+    strcpy(temp->word, input_word);
+    temp -> next = NULL;
+    if (q->last == NULL){
+        // Primeiro input
+        q->first = q->last = temp;
+        return;
+    }
+    q->last->next = temp;
+    q->last = temp;
+}
+
+char *return_new_word(Queue *q){
+    if (q->first == NULL) return NULL;
+
+    char *returnWord = (char*)malloc(16 * sizeof(char));
+    memset(returnWord, '\0', 16);
+
+    Node* temp = q->first;
+    strncpy(returnWord, temp->word, 15);
+    returnWord[15] = '\0';
+
+    q->first = q->first->next;
+    if (q->first == NULL) q->last = NULL;
+
+    free(temp);
+
+    return returnWord;
+}
