@@ -6,6 +6,7 @@
 #include <signal.h>
 #include <ctype.h>
 #include <termios.h>
+#include <pthread.h>
 
 void readFromFile();
 
@@ -29,3 +30,5 @@ void send(int writeFd, char *stringToSend);
 char *return_new_word(Queue *);
 void insert(Queue *, char*);
 Queue *createQueue();
+
+int countQueue(Queue *);
