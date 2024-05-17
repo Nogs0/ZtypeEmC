@@ -13,7 +13,7 @@ void recv_sig(int sig) // funcionamento do signal (tratamento de sinais)
 }
 
 int	main(void) {
-
+	
 	int descritor,
 		pipe1[2];  
 
@@ -29,6 +29,7 @@ int	main(void) {
 	else if (descritor > 0) { // PROCESSO PAI
 		close(pipe1[0]);
 		while (1) {
+			
 			readFromFile(FILE_PATH);
 			send(pipe1[1], buffer);
 			signal(SIGUSR1, recv_sig);
@@ -43,10 +44,9 @@ int	main(void) {
         // Queue *q = createQueue();
 		// system ("/bin/stty raw");
 		while (1){
-            printf("\e[1;1H\e[2J");
+			
+			// Input handle thread.
 
-			read(pipe1[0], buff, 15);
-			trataPalavra(buff, returnBuff);
             // insert(q, returnBuff);                
             // printf("aaaa");
             // INICIO -> TRECHO QUE DEVE SER TRANSFERIDO PARA UMA THREAD
@@ -65,16 +65,22 @@ int	main(void) {
 
             // char *newWord = return_new_word(q);
             // char *baseWord = NULL;
+
+			preparing_terminal();
+           
+			read(pipe1[0], buff, 15);
+			trataPalavra(buff, returnBuff);
+
             strcpy(buff, returnBuff);
 		    printf("%s\n", returnBuff);
-
-            char c = '\0';
+			char c = 's';
             while(testaDigito(buff, returnBuff, (c = getchar())))
-			    if (c != '\n'){ //remover após resolver o problema do getchar
-				    printf("\e[1;1H\e[2J");
-				    printf("%s\n", returnBuff);
-			    }		
-
+			 {
+				printf("\e[1;1H\e[2J"); 
+				
+				printf("%s\n", returnBuff);
+			 }
+			//printf("teste");
 			kill(pidPai, SIGUSR1); // acorda pai
             // FIM
 		}
@@ -126,12 +132,14 @@ void trataPalavra(char *word, char *returnWord) {
 }
 
 int	testaDigito(char *baseWord, char *testWord, char readChar) {
+		
 	if (strlen(baseWord) == 0)
 	{
 		return (0);
 	}
 	if (baseWord[0] == toupper(readChar))
 	{
+		printf("%c", readChar);
 		testWord[(strlen(testWord) - 1) - (strlen(baseWord) - 1)] = '*';
 		for (int i = 0; i < strlen(baseWord); i++)
 		{
@@ -167,7 +175,7 @@ void	insert(Queue *q, char *input_word) {
 	q->last = temp;
 }
 
-char	*return_new_word(Queue *q) {
+char *return_new_word(Queue *q) {
 	if (q->first == NULL)
 		return (NULL);
 
@@ -194,4 +202,26 @@ int countQueue(Queue *q) {
     while(q->first->next != NULL)
         count++;
     return count;
+}
+
+void preparing_terminal()
+{
+	tcgetattr(STDIN_FILENO, &old_termios);
+	new_termios = old_termios;
+
+	new_termios.c_lflag &= ~(ICANON | ECHO);
+	new_termios.c_cc[VMIN] = 1;
+	new_termios.c_cc[VTIME] = 0;
+
+	tcsetattr(STDIN_FILENO, TCSANOW, &new_termios);
+	printf("\e[?25l");
+	atexit(reset_terminal);
+}
+
+void reset_terminal(){
+	printf("\e[m");
+	printf("\e[?25h");
+	fflush(stdout);
+	tcsetattr(STDIN_FILENO, TCSANOW, &old_termios);
+
 }
