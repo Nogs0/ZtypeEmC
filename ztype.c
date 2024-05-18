@@ -22,6 +22,7 @@ int	main(void) {
 		exit(0);
 	}
 	pidPai = getpid();
+
 	if ((descritor = fork()) < 0) {
 		printf("We can't execute FORK\n");
 		exit(0);
@@ -74,13 +75,15 @@ int	main(void) {
             strcpy(buff, returnBuff);
 		    printf("%s\n", returnBuff);
 			char c = 's';
+			
+
             while(testaDigito(buff, returnBuff, (c = getchar())))
 			 {
 				printf("\e[1;1H\e[2J"); 
-				
 				printf("%s\n", returnBuff);
+				
 			 }
-			//printf("teste");
+			
 			kill(pidPai, SIGUSR1); // acorda pai
             // FIM
 		}
@@ -132,7 +135,7 @@ void trataPalavra(char *word, char *returnWord) {
 }
 
 int	testaDigito(char *baseWord, char *testWord, char readChar) {
-		
+	
 	if (strlen(baseWord) == 0)
 	{
 		return (0);
@@ -141,10 +144,12 @@ int	testaDigito(char *baseWord, char *testWord, char readChar) {
 	{
 		printf("%c", readChar);
 		testWord[(strlen(testWord) - 1) - (strlen(baseWord) - 1)] = '*';
+		
 		for (int i = 0; i < strlen(baseWord); i++)
 		{
 			baseWord[i] = baseWord[i + 1];
 		}
+		if (testWord[strlen(testWord) -2] == '*') { printf("\e[1;1H\e[2J"); return(0);}
 	}
 	return (1);
 }
@@ -204,8 +209,7 @@ int countQueue(Queue *q) {
     return count;
 }
 
-void preparing_terminal()
-{
+void preparing_terminal(){
 	tcgetattr(STDIN_FILENO, &old_termios);
 	new_termios = old_termios;
 

@@ -46,9 +46,11 @@ void trataPalavra(char *word, char *returnWord);
 // ************ Terminal functions **************
 
 // Structs definidas em <termios.h>, servem para guardar o estado no terminal.
-static struct termios old_termios, 
-                      new_termios;
+static struct termios old_termios;
+static struct termios new_termios;
 // Reseta o terminal para o estado salvo em old_termios
 void reset_terminal();
 // Desativa o modo canonico, desativa o ECHO e deixa o cursor invisível.
 void preparing_terminal();
+
+// **********************************************
