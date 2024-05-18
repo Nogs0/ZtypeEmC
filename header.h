@@ -54,3 +54,11 @@ void reset_terminal();
 void preparing_terminal();
 
 // **********************************************
+void *input_handle(void *arg);
+void *graphical_handle(void *arg);
+
+typedef struct{
+    int pipe;
+    char buff[15];
+    char returnBuff[15];
+} Input_handle_arguments;

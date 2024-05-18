@@ -42,53 +42,55 @@ int	main(void) {
 		close(pipe1[1]); 
         char buff[16] = "";
 	    char returnBuff[15] = "";
-        // Queue *q = createQueue();
-		// system ("/bin/stty raw");
-		while (1){
-			
-			// Input handle thread.
+      
+		preparing_terminal();
+		pthread_t thread1;
+		pthread_t thread2;
+		Input_handle_arguments input_args;
 
-            // insert(q, returnBuff);                
-            // printf("aaaa");
-            // INICIO -> TRECHO QUE DEVE SER TRANSFERIDO PARA UMA THREAD
-            /*
-             Acho interessante deixar o filho apenas com as chamadas de threads,
-             n sei se estou viajando, mas acho que precisaremos de 4 threads aqui,
-                - uma para ficar olhando a fila e acordar o pai quando necessário,
-                menos que 3 na fila, por exemplo...
-                - uma para inserir na fila quando o pai responder, acho que precisaremos
-                ficar vigiando o pipe, se ele mudar de tamanho a gente insere a nova palavra...
-                - uma para printar as palavras na tela, só pegar a head e printar na tela,
-                tem que pensar em como fazer para as palavras ficarem andando e quando
-                inserir mais na tela
-                - uma para conferir a entrada do usuário, usando a função testaDigito
-            */
+		input_args.pipe = pipe1[0];
+		strcmp(input_args.buff, buff);
+		
+		pthread_create(&thread1, NULL, input_handle, &input_args);
+		// pthread_create(&thread2, NULL, graphical_handle, NULL);
+		
+		pthread_join(thread1, NULL);
+		// pthread_join(thread2, NULL);
 
-            // char *newWord = return_new_word(q);
-            // char *baseWord = NULL;
-
-			preparing_terminal();
-           
-			read(pipe1[0], buff, 15);
+	}                    
+}
+void *input_handle(void *arg){
+	Input_handle_arguments *args = (Input_handle_arguments *)arg;
+	int pipe1 = args->pipe;
+	char buff[15];
+	strcpy(buff,args->buff);
+	char returnBuff[15];
+	strcpy(buff,args->returnBuff);
+	while(1){
+			read(pipe1, buff, 15);
 			trataPalavra(buff, returnBuff);
 
             strcpy(buff, returnBuff);
 		    printf("%s\n", returnBuff);
 			char c = 's';
-			
-
+		
             while(testaDigito(buff, returnBuff, (c = getchar())))
 			 {
 				printf("\e[1;1H\e[2J"); 
 				printf("%s\n", returnBuff);
-				
 			 }
 			
 			kill(pidPai, SIGUSR1); // acorda pai
-            // FIM
-		}
-		close(pipe1[0]); 
-	}                    
+	}
+	close(pipe1); 
+
+	printf("INPUT HANDLE STARTS");
+}
+void *graphical_handle(void *arg){
+	while(1){
+
+	}
+	printf("Igraphical_handle STARTS");
 }
 
 void readFromFile(void) {
