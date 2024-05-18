@@ -41,57 +41,117 @@ int	main(void) {
 	else {                 // PROCESSO FILHO
 		close(pipe1[1]); 
         char buff[16] = "";
-	    char returnBuff[15] = "";
+	    char returnBuff[15] = "OPA";
       
 		preparing_terminal();
 		pthread_t thread1;
-		pthread_t thread2;
+		//pthread_t thread2;
 		Input_handle_arguments input_args;
-
 		input_args.pipe = pipe1[0];
 		strcmp(input_args.buff, buff);
-		
 		pthread_create(&thread1, NULL, input_handle, &input_args);
 		// pthread_create(&thread2, NULL, graphical_handle, NULL);
-		
+
 		pthread_join(thread1, NULL);
 		// pthread_join(thread2, NULL);
 
 	}                    
 }
 void *input_handle(void *arg){
+	char buff[15];
+	char returnBuff[15] = "teste";
 	Input_handle_arguments *args = (Input_handle_arguments *)arg;
 	int pipe1 = args->pipe;
-	char buff[15];
 	strcpy(buff,args->buff);
-	char returnBuff[15];
 	strcpy(buff,args->returnBuff);
-	while(1){
-			read(pipe1, buff, 15);
-			trataPalavra(buff, returnBuff);
 
-            strcpy(buff, returnBuff);
-		    printf("%s\n", returnBuff);
-			char c = 's';
-		
-            while(testaDigito(buff, returnBuff, (c = getchar())))
-			 {
-				printf("\e[1;1H\e[2J"); 
-				printf("%s\n", returnBuff);
-			 }
-			
-			kill(pidPai, SIGUSR1); // acorda pai
+	unsigned short int completed_word = 0;
+	pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+	printf("Endereco do mutex no input handle: %p\n", &mutex);
+	pthread_t graphical_thread;
+
+	Graphical_handle_arguments graphical_args;
+	graphical_args.wordPointer = returnBuff;
+	graphical_args.mutex = &mutex;
+
+	pthread_create(&graphical_thread, NULL, graphical_handle, &graphical_args);
+	
+	while(1){
+		read(pipe1, buff, 15);
+		trataPalavra(buff, returnBuff);
+		strcpy(buff, returnBuff);
+		char c = 's';
+
+		pthread_mutex_lock(&mutex);
+		while(testaDigito(buff, returnBuff, (c = getchar()))){}
+		pthread_mutex_unlock(&mutex);
+
+		kill(pidPai, SIGUSR1); // acorda pai
 	}
 	close(pipe1); 
-
-	printf("INPUT HANDLE STARTS");
 }
+
 void *graphical_handle(void *arg){
-	while(1){
+	Graphical_handle_arguments *args = (Graphical_handle_arguments *)arg;
+	pthread_mutex_t *mutex  = args->mutex;
 
+	
+	char *wordPointer = (char *)args->wordPointer;
+	pthread_t print_word;
+
+	Fall_word_arguments fall_word_args;
+	fall_word_args.wordPointer = wordPointer;
+	
+	while(1){
+		pthread_create(&print_word, NULL, fall_word, &fall_word_args);
+		
+		pthread_mutex_lock(mutex);
+		pthread_cancel(print_word);
+		pthread_mutex_unlock(mutex);
 	}
-	printf("Igraphical_handle STARTS");
 }
+void *fall_word(void *arg){
+    char *returnBuff;
+    Fall_word_arguments *args = (Fall_word_arguments *)arg;
+	returnBuff = args->wordPointer;
+	srand(time(NULL));
+	int random = (rand() % 25) + 1;
+	
+	while(1){
+		for (int i = 0; i <= 15; i++) {  
+			printf("\e[%d;%dH%s\n", i + 1, random + 1, returnBuff); // anscii mais rapido que \n
+			fflush(stdout);  
+			usleep(100000);  
+			clear_screen();
+			if (i == 15){
+				printf("******** PERDEU HAHAHAHHAHAAHAHHAHAHAHAHAHAHAHAHA ********");
+				exit(0);
+			}
+    	}
+	}
+	
+}
+
+int	testaDigito(char *baseWord, char *testWord, char readChar) {
+	
+	if (strlen(baseWord) == 0)
+	{
+		return (0);
+	}
+	if (baseWord[0] == toupper(readChar))
+	{
+		
+		testWord[(strlen(testWord) - 1) - (strlen(baseWord) - 1)] = '*';
+		
+		for (int i = 0; i < strlen(baseWord); i++)
+		{
+			baseWord[i] = baseWord[i + 1];
+		}
+		if (testWord[strlen(testWord) -2] == '*') { clear_screen(); return(0);}
+	}
+	return (1);
+}
+
 
 void readFromFile(void) {
 	FILE	*pFile;
@@ -134,26 +194,6 @@ void trataPalavra(char *word, char *returnWord) {
 		word[i] = toupper(word[i]);
 		returnWord[i] = toupper(word[i]);
 	}
-}
-
-int	testaDigito(char *baseWord, char *testWord, char readChar) {
-	
-	if (strlen(baseWord) == 0)
-	{
-		return (0);
-	}
-	if (baseWord[0] == toupper(readChar))
-	{
-		printf("%c", readChar);
-		testWord[(strlen(testWord) - 1) - (strlen(baseWord) - 1)] = '*';
-		
-		for (int i = 0; i < strlen(baseWord); i++)
-		{
-			baseWord[i] = baseWord[i + 1];
-		}
-		if (testWord[strlen(testWord) -2] == '*') { printf("\e[1;1H\e[2J"); return(0);}
-	}
-	return (1);
 }
 
 Queue	*createQueue(void) {
@@ -230,4 +270,8 @@ void reset_terminal(){
 	fflush(stdout);
 	tcsetattr(STDIN_FILENO, TCSANOW, &old_termios);
 
+}
+
+void clear_screen(){
+	printf("\e[1;1H\e[2J");
 }

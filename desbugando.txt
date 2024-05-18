@@ -1,0 +1,2 @@
+A thread input_handle vai deixar o mutex lockado enquanto ela espera que a palavra termine.
+Enquanto o mutex estiver travado a palavra atual tem que cair na tela, isso vai ser feito atraves de uma outra thread dentro da graphical handle. Essa thread vai printando a palavra caindo na tela enquanto o mutex esta travado. Na hora que o mutex ser liberado essa thread vai ser morta, comecando logo em seguida de novo com uma nova palavra

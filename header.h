@@ -56,9 +56,19 @@ void preparing_terminal();
 // **********************************************
 void *input_handle(void *arg);
 void *graphical_handle(void *arg);
-
+void *fall_word(void *arg);
+void clear_screen();
 typedef struct{
     int pipe;
     char buff[15];
     char returnBuff[15];
 } Input_handle_arguments;
+
+typedef struct{
+    char *wordPointer;
+    pthread_mutex_t *mutex;
+}Graphical_handle_arguments;
+
+typedef struct{
+    char *wordPointer;
+}Fall_word_arguments;
