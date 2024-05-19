@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <termios.h>
 #include <pthread.h>
+#include <sys/ioctl.h>
 
 // ******* Queue functions and typedefs. *********
 typedef struct Node{
@@ -70,5 +71,7 @@ typedef struct{
 }Graphical_handle_arguments;
 
 typedef struct{
+    int rows;
+    int cols;
     char *wordPointer;
 }Fall_word_arguments;

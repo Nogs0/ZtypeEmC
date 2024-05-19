@@ -92,6 +92,11 @@ void *input_handle(void *arg){
 }
 
 void *graphical_handle(void *arg){
+	struct winsize w;
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+	int rows = w.ws_row;
+	int cols = w.ws_col;
+	
 	Graphical_handle_arguments *args = (Graphical_handle_arguments *)arg;
 	pthread_mutex_t *mutex  = args->mutex;
 
@@ -101,7 +106,9 @@ void *graphical_handle(void *arg){
 
 	Fall_word_arguments fall_word_args;
 	fall_word_args.wordPointer = wordPointer;
-	
+	fall_word_args.cols = cols;
+	fall_word_args.rows = rows;
+
 	while(1){
 		pthread_create(&print_word, NULL, fall_word, &fall_word_args);
 		
@@ -109,24 +116,53 @@ void *graphical_handle(void *arg){
 		pthread_cancel(print_word);
 		pthread_mutex_unlock(mutex);
 	}
+
 }
 void *fall_word(void *arg){
     char *returnBuff;
+	int rows;
+	int cols;
+	int j;
     Fall_word_arguments *args = (Fall_word_arguments *)arg;
+
 	returnBuff = args->wordPointer;
+	rows = args->rows;
+	cols = args->cols;
+
 	srand(time(NULL));
-	int random = (rand() % 25) + 1;
-	
+	int random = (rand() % cols) + 1;
+	//int random = 75;
+	if (random + strlen(returnBuff) > cols) {
+		// Evita que a palavra separe no meio no canto da tela.
+		random = random - strlen(returnBuff);
+		}
+
 	while(1){
-		for (int i = 0; i <= 15; i++) {  
-			printf("\e[%d;%dH%s\n", i + 1, random + 1, returnBuff); // anscii mais rapido que \n
+		for (int i = 0; i <= rows; i++) {  
+			// // Randomizando o angulo que a palavra vai
+			j = i;
+			if ((random + j) + strlen (returnBuff) -1 >= cols) {
+				// Rebate no canto da tela
+				while(i < rows){
+					i++;
+					j--;
+					printf("\e[%d;%dH%s\n", i + 1, ((random + j) - strlen (returnBuff) + 1) , returnBuff); // anscii mais rapido que \n
+					fflush(stdout);  
+					usleep(100000);  
+					clear_screen();
+				}
+				break;
+			}
+			
+			j = i;
+			printf("\e[%d;%dH%s\n", i + 1, random + j, returnBuff); // anscii mais rapido que \n
 			fflush(stdout);  
 			usleep(100000);  
 			clear_screen();
-			if (i == 15){
-				printf("******** PERDEU HAHAHAHHAHAAHAHHAHAHAHAHAHAHAHAHA ********");
-				exit(0);
-			}
+			// if (i == rows){
+			// 	printf("******** PERDEU HAHAHAHHAHAAHAHHAHAHAHAHAHAHAHAHA ********");
+			// 	exit(0);
+			// }
     	}
 	}
 	
