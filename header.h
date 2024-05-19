@@ -60,6 +60,7 @@ void *graphical_handle(void *arg);
 void *fall_word(void *arg);
 void clear_screen();
 void *watch_terminal_size(void *arg);
+int return_next_color(int total_rows, int current_row);
 
 typedef struct{
     int pipe;

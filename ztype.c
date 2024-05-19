@@ -30,7 +30,6 @@ int	main(void) {
 	else if (descritor > 0) { // PROCESSO PAI
 		close(pipe1[0]);
 		while (1) {
-			
 			readFromFile(FILE_PATH);
 			send(pipe1[1], buffer);
 			signal(SIGUSR1, recv_sig);
@@ -147,7 +146,6 @@ void *fall_word(void *arg){
 	
 	int j;
 
-
 	returnBuff = args->wordPointer;
 
 	srand(time(NULL));
@@ -159,14 +157,15 @@ void *fall_word(void *arg){
 		}
 
 	while(1){
-		for (int i = 0; i <= *rows; i++) {  
-			// // Randomizando o angulo que a palavra vai
+		
+		for (int i = 0; i <= *rows; i++) {
 			j = i;
 			if ((random + j) + strlen (returnBuff) -1 >= *cols) {
 				// Rebate no canto da tela
 				while(i < *rows){
 					i++;
 					j--;
+					config_next_color(*rows, i);  
 					printf("\e[%d;%dH%s\n", i + 1, ((random + j) - strlen (returnBuff) + 1) , returnBuff); // anscii mais rapido que \n
 					fflush(stdout);  
 					usleep(100000);  
@@ -176,6 +175,7 @@ void *fall_word(void *arg){
 			}
 			
 			j = i;
+			config_next_color(*rows, i);  
 			printf("\e[%d;%dH%s\n", i + 1, random + j, returnBuff); // anscii mais rapido que \n
 			fflush(stdout);  
 			usleep(100000);  
@@ -185,6 +185,51 @@ void *fall_word(void *arg){
 	}
 	
 }
+int config_next_color(int total_rows, int current_row){
+	int um_terco = total_rows / 3;
+	int dois_terco = um_terco * 2;
+
+	int reds[5] = {196, 160, 124, 88, 52};
+	int yellows[5] = {226, 184, 178, 143, 100};
+	int greens[5] = {118, 82, 70, 28, 22};
+	
+	if (current_row > dois_terco){
+		// red
+		printf("\e[38;5;%dm", reds[return_current_color(um_terco, current_row /3)]);
+		return 0;
+	} else if (current_row > um_terco) {
+		// yellow
+		printf("\e[38;5;%dm", yellows[return_current_color(um_terco, current_row / 2)]);
+		return 0;
+	}
+	// green
+	printf("\e[38;5;%dm", greens[return_current_color(um_terco, current_row )]);
+	return 0;
+}
+int return_current_color(int terco, int current_row){
+	int quintuplo_1 = terco / 5;
+	int quintuplo_2 = quintuplo_1 * 2;
+	int quintuplo_3 = quintuplo_1 * 3;
+	int quintuplo_4 = quintuplo_1 * 4;
+	int quintuplo_5 = quintuplo_1 * 5;
+	
+	if (current_row >= quintuplo_5 ){
+		return 4;
+	}
+	if (current_row >= quintuplo_4 ){
+		return 3;
+	}
+	if (current_row >= quintuplo_3 ){
+		return 2;
+	}
+	if (current_row >= quintuplo_2 ){
+		return 1;
+	}
+	
+	return 0;
+	
+}
+
 
 int	testaDigito(char *baseWord, char *testWord, char readChar) {
 	
