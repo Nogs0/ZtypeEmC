@@ -59,6 +59,8 @@ void *input_handle(void *arg);
 void *graphical_handle(void *arg);
 void *fall_word(void *arg);
 void clear_screen();
+void *watch_terminal_size(void *arg);
+
 typedef struct{
     int pipe;
     char buff[15];
@@ -71,7 +73,12 @@ typedef struct{
 }Graphical_handle_arguments;
 
 typedef struct{
-    int rows;
-    int cols;
+    int *rows;
+    int *cols;
     char *wordPointer;
 }Fall_word_arguments;
+
+typedef struct{
+    int *rows;
+    int *cols;
+}Watch_terminal_arguments;

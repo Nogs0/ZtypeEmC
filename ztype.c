@@ -92,58 +92,79 @@ void *input_handle(void *arg){
 }
 
 void *graphical_handle(void *arg){
-	struct winsize w;
-	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-	int rows = w.ws_row;
-	int cols = w.ws_col;
+	int rows = 68;
+	int cols = 68;
 	
+	pthread_t print_word;
+	pthread_t watch_terminal;
+
 	Graphical_handle_arguments *args = (Graphical_handle_arguments *)arg;
 	pthread_mutex_t *mutex  = args->mutex;
-
-	
 	char *wordPointer = (char *)args->wordPointer;
-	pthread_t print_word;
-
+	
+	Watch_terminal_arguments watch_term_args;
+	watch_term_args.rows = &rows;
+	watch_term_args.cols = &cols;
+	
+	pthread_create(&watch_terminal, NULL, watch_terminal_size, &watch_term_args);
+	
 	Fall_word_arguments fall_word_args;
 	fall_word_args.wordPointer = wordPointer;
-	fall_word_args.cols = cols;
-	fall_word_args.rows = rows;
+	fall_word_args.cols = &cols;
+	fall_word_args.rows = &rows;
 
 	while(1){
 		pthread_create(&print_word, NULL, fall_word, &fall_word_args);
-		
 		pthread_mutex_lock(mutex);
 		pthread_cancel(print_word);
 		pthread_mutex_unlock(mutex);
 	}
 
 }
-void *fall_word(void *arg){
-    char *returnBuff;
-	int rows;
-	int cols;
-	int j;
-    Fall_word_arguments *args = (Fall_word_arguments *)arg;
 
-	returnBuff = args->wordPointer;
+void *watch_terminal_size(void *arg){
+	Watch_terminal_arguments *args = (Watch_terminal_arguments *)arg;
+	int *rows; 
+	int *cols; 
 	rows = args->rows;
 	cols = args->cols;
 
+	struct winsize w;
+	// Fica atualizando o tamanho do terminal para ficar mais dinamico rsrs.
+	while (1){
+		ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+		*rows = w.ws_row;
+		*cols = w.ws_col;
+	}
+}
+void *fall_word(void *arg){
+    char *returnBuff;
+	int *rows;
+	int *cols;
+	Fall_word_arguments *args = (Fall_word_arguments *)arg;
+	rows = args->rows;
+	cols = args->cols;
+	
+	int j;
+
+
+	returnBuff = args->wordPointer;
+
 	srand(time(NULL));
-	int random = (rand() % cols) + 1;
+	int random = (rand() % *cols) + 1;
 	//int random = 75;
-	if (random + strlen(returnBuff) > cols) {
+	if (random + strlen(returnBuff) > *cols) {
 		// Evita que a palavra separe no meio no canto da tela.
 		random = random - strlen(returnBuff);
 		}
 
 	while(1){
-		for (int i = 0; i <= rows; i++) {  
+		for (int i = 0; i <= *rows; i++) {  
 			// // Randomizando o angulo que a palavra vai
 			j = i;
-			if ((random + j) + strlen (returnBuff) -1 >= cols) {
+			if ((random + j) + strlen (returnBuff) -1 >= *cols) {
 				// Rebate no canto da tela
-				while(i < rows){
+				while(i < *rows){
 					i++;
 					j--;
 					printf("\e[%d;%dH%s\n", i + 1, ((random + j) - strlen (returnBuff) + 1) , returnBuff); // anscii mais rapido que \n
@@ -159,10 +180,7 @@ void *fall_word(void *arg){
 			fflush(stdout);  
 			usleep(100000);  
 			clear_screen();
-			// if (i == rows){
-			// 	printf("******** PERDEU HAHAHAHHAHAAHAHHAHAHAHAHAHAHAHAHA ********");
-			// 	exit(0);
-			// }
+			
     	}
 	}
 	
