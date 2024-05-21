@@ -10,24 +10,24 @@
 #include <sys/ioctl.h>
 
 // ******* Queue functions and typedefs. *********
-typedef struct Node{
-    char word[15];
-    struct Node *next;
-}Node;
+// typedef struct Node{
+//     char word[15];
+//     struct Node *next;
+// }Node;
 
-typedef struct Queue{
-    Node *first;
-    Node *last;
-}Queue;
+// typedef struct Queue{
+//     Node *first;
+//     Node *last;
+// }Queue;
 
-// Retorna um ponteiro para o primeiro caractere da primeira string da fila.
-char *return_new_word(Queue *); 
-// Insere na fila
-void insert(Queue *, char*);    
-// Cria uma fila vazia
-Queue *createQueue();
-// Conta quantos tem na fila  
-int countQueue(Queue *);        
+// // Retorna um ponteiro para o primeiro caractere da primeira string da fila.
+// char *return_new_word(Queue *); 
+// // Insere na fila
+// void insert(Queue *, char*);    
+// // Cria uma fila vazia
+// Queue *createQueue();
+// // Conta quantos tem na fila  
+// int countQueue(Queue *);        
 
 // **********************************************
 
@@ -61,22 +61,27 @@ void *fall_word(void *arg);
 void clear_screen();
 void *watch_terminal_size(void *arg);
 int return_next_color(int total_rows, int current_row);
+int config_next_color(int total_rows, int current_row, char *color);
+int return_current_color(int terco, int current_row);
+void print_header(int lifes, int correctWords, char *color);
 
 typedef struct{
     int pipe;
-    char buff[15];
-    char returnBuff[15];
 } Input_handle_arguments;
 
 typedef struct{
     char *wordPointer;
     pthread_mutex_t *mutex;
+    int *lifes;
+    int *correctWords;
 }Graphical_handle_arguments;
 
 typedef struct{
     int *rows;
     int *cols;
     char *wordPointer;
+    int *lifes;
+    int *correctWords;
 }Fall_word_arguments;
 
 typedef struct{

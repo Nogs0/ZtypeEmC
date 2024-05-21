@@ -14,8 +14,7 @@ void recv_sig(int sig) // funcionamento do signal (tratamento de sinais)
 
 int	main(void) {
 	
-	int descritor,
-		pipe1[2];  
+	int descritor, pipe1[2];  
 
 	if (pipe(pipe1) < 0) {
 		printf("We can't exceute pipe\n");
@@ -39,15 +38,11 @@ int	main(void) {
 	}                    
 	else {                 // PROCESSO FILHO
 		close(pipe1[1]); 
-        char buff[16] = "";
-	    char returnBuff[15] = "OPA";
-      
 		preparing_terminal();
 		pthread_t thread1;
 		//pthread_t thread2;
 		Input_handle_arguments input_args;
 		input_args.pipe = pipe1[0];
-		strcmp(input_args.buff, buff);
 		pthread_create(&thread1, NULL, input_handle, &input_args);
 		// pthread_create(&thread2, NULL, graphical_handle, NULL);
 
@@ -56,13 +51,14 @@ int	main(void) {
 
 	}                    
 }
+
 void *input_handle(void *arg){
 	char buff[15];
-	char returnBuff[15] = "teste";
+	char returnBuff[15] = "";
+	int lifes = 5;
+	int correctWords = 0;
 	Input_handle_arguments *args = (Input_handle_arguments *)arg;
 	int pipe1 = args->pipe;
-	strcpy(buff,args->buff);
-	strcpy(buff,args->returnBuff);
 
 	unsigned short int completed_word = 0;
 	pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -72,6 +68,8 @@ void *input_handle(void *arg){
 	Graphical_handle_arguments graphical_args;
 	graphical_args.wordPointer = returnBuff;
 	graphical_args.mutex = &mutex;
+	graphical_args.lifes = &lifes;
+	graphical_args.correctWords = &correctWords;
 
 	pthread_create(&graphical_thread, NULL, graphical_handle, &graphical_args);
 	
@@ -79,12 +77,11 @@ void *input_handle(void *arg){
 		read(pipe1, buff, 15);
 		trataPalavra(buff, returnBuff);
 		strcpy(buff, returnBuff);
-		char c = 's';
 
 		pthread_mutex_lock(&mutex);
-		while(testaDigito(buff, returnBuff, (c = getchar()))){}
+		while(testaDigito(buff, returnBuff, getchar()));
 		pthread_mutex_unlock(&mutex);
-
+		correctWords++;
 		kill(pidPai, SIGUSR1); // acorda pai
 	}
 	close(pipe1); 
@@ -93,12 +90,13 @@ void *input_handle(void *arg){
 void *graphical_handle(void *arg){
 	int rows = 68;
 	int cols = 68;
-	
+
 	pthread_t print_word;
 	pthread_t watch_terminal;
+	pthread_t print_header;
 
 	Graphical_handle_arguments *args = (Graphical_handle_arguments *)arg;
-	pthread_mutex_t *mutex  = args->mutex;
+	pthread_mutex_t *mutex = args->mutex;
 	char *wordPointer = (char *)args->wordPointer;
 	
 	Watch_terminal_arguments watch_term_args;
@@ -111,6 +109,8 @@ void *graphical_handle(void *arg){
 	fall_word_args.wordPointer = wordPointer;
 	fall_word_args.cols = &cols;
 	fall_word_args.rows = &rows;
+	fall_word_args.lifes = args->lifes;
+	fall_word_args.correctWords = args->correctWords;
 
 	while(1){
 		pthread_create(&print_word, NULL, fall_word, &fall_word_args);
@@ -118,7 +118,6 @@ void *graphical_handle(void *arg){
 		pthread_cancel(print_word);
 		pthread_mutex_unlock(mutex);
 	}
-
 }
 
 void *watch_terminal_size(void *arg){
@@ -136,16 +135,19 @@ void *watch_terminal_size(void *arg){
 		*cols = w.ws_col;
 	}
 }
+
 void *fall_word(void *arg){
     char *returnBuff;
 	int *rows;
 	int *cols;
+	int *lifes;
+	int *correctWords;
+
 	Fall_word_arguments *args = (Fall_word_arguments *)arg;
 	rows = args->rows;
 	cols = args->cols;
-	
-	int j;
-
+	lifes = args->lifes;
+	correctWords = args->correctWords;
 	returnBuff = args->wordPointer;
 
 	srand(time(NULL));
@@ -156,36 +158,49 @@ void *fall_word(void *arg){
 		random = random - strlen(returnBuff);
 		}
 
+	int j;
 	while(1){
-		
-		for (int i = 0; i <= *rows; i++) {
+
+		if ((*lifes) == 0){
+			printf("Segmentation fault 0x00000000\n eh brinks, ce perdeu mano!\n");
+			exit(0);
+		}
+
+		char color[15];
+		for (int i = 0; i < *rows - 1; i++) {
 			j = i;
-			if ((random + j) + strlen (returnBuff) -1 >= *cols) {
+			if ((random + j) + strlen(returnBuff) - 1 >= *cols) {
 				// Rebate no canto da tela
 				while(i < *rows){
 					i++;
 					j--;
-					config_next_color(*rows, i);  
-					printf("\e[%d;%dH%s\n", i + 1, ((random + j) - strlen (returnBuff) + 1) , returnBuff); // anscii mais rapido que \n
+					config_next_color(*rows - 1, i, color);
+					print_header(*lifes, *args->correctWords, color);
+					printf("\e[%d;%ldH%s\n", i + 1, ((random + j) - strlen(returnBuff) + 1) , returnBuff); // anscii mais rapido que \n
 					fflush(stdout);  
 					usleep(100000);  
 					clear_screen();
 				}
 				break;
 			}
-			
+
 			j = i;
-			config_next_color(*rows, i);  
+			config_next_color(*rows, i, color);  
+			print_header(*lifes, *args->correctWords, color);
 			printf("\e[%d;%dH%s\n", i + 1, random + j, returnBuff); // anscii mais rapido que \n
 			fflush(stdout);  
 			usleep(100000);  
 			clear_screen();
-			
     	}
+		(*lifes)--;
 	}
-	
 }
-int config_next_color(int total_rows, int current_row){
+
+void print_header(int lifes, int correctWords, char *color){
+	printf("%sPONTUACAO: %d \t VIDAS: %d %s", "\e[38;5;255m", correctWords, lifes, color);
+}
+
+int config_next_color(int total_rows, int current_row, char *color){
 	int um_terco = total_rows / 3;
 	int dois_terco = um_terco * 2;
 
@@ -195,17 +210,19 @@ int config_next_color(int total_rows, int current_row){
 	
 	if (current_row > dois_terco){
 		// red
-		printf("\e[38;5;%dm", reds[return_current_color(um_terco, current_row /3)]);
+		sprintf(color, "\e[38;5;%dm", reds[return_current_color(um_terco, current_row /3)]);
 		return 0;
 	} else if (current_row > um_terco) {
 		// yellow
-		printf("\e[38;5;%dm", yellows[return_current_color(um_terco, current_row / 2)]);
+		sprintf(color, "\e[38;5;%dm", yellows[return_current_color(um_terco, current_row / 2)]);
 		return 0;
 	}
-	// green
-	printf("\e[38;5;%dm", greens[return_current_color(um_terco, current_row )]);
+
+	//green
+	sprintf(color, "\e[38;5;%dm", greens[return_current_color(um_terco, current_row )]);
 	return 0;
 }
+
 int return_current_color(int terco, int current_row){
 	int quintuplo_1 = terco / 5;
 	int quintuplo_2 = quintuplo_1 * 2;
@@ -227,9 +244,7 @@ int return_current_color(int terco, int current_row){
 	}
 	
 	return 0;
-	
 }
-
 
 int	testaDigito(char *baseWord, char *testWord, char readChar) {
 	
@@ -250,7 +265,6 @@ int	testaDigito(char *baseWord, char *testWord, char readChar) {
 	}
 	return (1);
 }
-
 
 void readFromFile(void) {
 	FILE	*pFile;
@@ -295,60 +309,60 @@ void trataPalavra(char *word, char *returnWord) {
 	}
 }
 
-Queue	*createQueue(void) {
-	Queue	*temp;
+// Queue	*createQueue(void) {
+// 	Queue	*temp;
 
-	// Inicializa fila vazia
-	temp = (Queue *)malloc(sizeof(Queue));
-	temp->first = temp->last = NULL;
-	return (temp);
-}
+// 	// Inicializa fila vazia
+// 	temp = (Queue *)malloc(sizeof(Queue));
+// 	temp->first = temp->last = NULL;
+// 	return (temp);
+// }
 
-void	insert(Queue *q, char *input_word) {
-	Node	*temp;
+// void	insert(Queue *q, char *input_word) {
+// 	Node	*temp;
 
-	temp = (Node *)malloc(sizeof(Node));
-	memset(temp->word, '\0', sizeof(temp->word));
-	strcpy(temp->word, input_word);
-	temp->next = NULL;
-	if (q->last == NULL)
-	{
-		// Primeiro input
-		q->first = q->last = temp;
-		return ;
-	}
-	q->last->next = temp;
-	q->last = temp;
-}
+// 	temp = (Node *)malloc(sizeof(Node));
+// 	memset(temp->word, '\0', sizeof(temp->word));
+// 	strcpy(temp->word, input_word);
+// 	temp->next = NULL;
+// 	if (q->last == NULL)
+// 	{
+// 		// Primeiro input
+// 		q->first = q->last = temp;
+// 		return ;
+// 	}
+// 	q->last->next = temp;
+// 	q->last = temp;
+// }
 
-char *return_new_word(Queue *q) {
-	if (q->first == NULL)
-		return (NULL);
+// char *return_new_word(Queue *q) {
+// 	if (q->first == NULL)
+// 		return (NULL);
 
-	char *returnWord = (char *)malloc(16 * sizeof(char));
-	memset(returnWord, '\0', 16);
+// 	char *returnWord = (char *)malloc(16 * sizeof(char));
+// 	memset(returnWord, '\0', 16);
 
-	Node *temp = q->first;
-	strncpy(returnWord, temp->word, 15);
-	returnWord[15] = '\0';
+// 	Node *temp = q->first;
+// 	strncpy(returnWord, temp->word, 15);
+// 	returnWord[15] = '\0';
 
-	q->first = q->first->next;
-	if (q->first == NULL)
-		q->last = NULL;
+// 	q->first = q->first->next;
+// 	if (q->first == NULL)
+// 		q->last = NULL;
 
-	free(temp);
+// 	free(temp);
 
-	return (returnWord);
-}
+// 	return (returnWord);
+// }
 
-int countQueue(Queue *q) {
-    if (q->first == NULL)
-        return 0;
-    int count = 1;
-    while(q->first->next != NULL)
-        count++;
-    return count;
-}
+// int countQueue(Queue *q) {
+//     if (q->first == NULL)
+//         return 0;
+//     int count = 1;
+//     while(q->first->next != NULL)
+//         count++;
+//     return count;
+// }
 
 void preparing_terminal(){
 	tcgetattr(STDIN_FILENO, &old_termios);
