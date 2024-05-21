@@ -1,0 +1,21 @@
+Perfumarias:
+
+1) Header
+    - Placar que conta quantas palavras você acertou.
+    - Corações simbolizando as vidas (like mario)
+
+2) Adicionar dificuldade
+    - Basicamente a dificuldade é o tempo em milissegundos da atualizacao da letra na tela. Se eu deixar isso global e alterar em um menuzinho antes do programa começar a dificuldade fica dinâmica.
+
+3) Menu principal estilizado
+    - Usar arte ASCII para criar um menu estilizado onde o jogador vai poder escolher a dificuldade, sair ou iniciar o jogo.
+    - Ao iniciar o jogo o jogador deve colocar seu nome
+
+4) Armazenar recordes
+    - (Nome - pontuação - dificuldade travada (fraco/homem))
+
+
+5) Ideias geniais
+    - Barrinha que mexe de acordo com o redimensionamento da tela, se a palavra bater na barrinha, ela começa a subir, dando uma nova chance para o jogador digitá-la
+    - Navezinha que 'atira' nas letras digitadas
+    - Aumentar quantidade de palavras na tela
