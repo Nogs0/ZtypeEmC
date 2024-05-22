@@ -12,12 +12,15 @@ void recv_sig(int sig) // funcionamento do signal (tratamento de sinais)
 int	main(void) {
 	
 	int descritor, pipe1[2];  
+	
+	int descritor, pipe1[2];  
 
 	if (pipe(pipe1) < 0) {
 		printf("We can't exceute pipe\n");
 		exit(0);
 	}
 	pidPai = getpid();
+
 
 	if ((descritor = fork()) < 0) {
 		printf("We can't execute FORK\n");
@@ -398,10 +401,30 @@ unsigned long int getDificult(int level){
 // 	temp->first = temp->last = NULL;
 // 	return (temp);
 // }
+// 	// Inicializa fila vazia
+// 	temp = (Queue *)malloc(sizeof(Queue));
+// 	temp->first = temp->last = NULL;
+// 	return (temp);
+// }
 
 // void	insert(Queue *q, char *input_word) {
 // 	Node	*temp;
+// void	insert(Queue *q, char *input_word) {
+// 	Node	*temp;
 
+// 	temp = (Node *)malloc(sizeof(Node));
+// 	memset(temp->word, '\0', sizeof(temp->word));
+// 	strcpy(temp->word, input_word);
+// 	temp->next = NULL;
+// 	if (q->last == NULL)
+// 	{
+// 		// Primeiro input
+// 		q->first = q->last = temp;
+// 		return ;
+// 	}
+// 	q->last->next = temp;
+// 	q->last = temp;
+// }
 // 	temp = (Node *)malloc(sizeof(Node));
 // 	memset(temp->word, '\0', sizeof(temp->word));
 // 	strcpy(temp->word, input_word);
@@ -419,10 +442,18 @@ unsigned long int getDificult(int level){
 // char *return_new_word(Queue *q) {
 // 	if (q->first == NULL)
 // 		return (NULL);
+// char *return_new_word(Queue *q) {
+// 	if (q->first == NULL)
+// 		return (NULL);
 
 // 	char *returnWord = (char *)malloc(16 * sizeof(char));
 // 	memset(returnWord, '\0', 16);
+// 	char *returnWord = (char *)malloc(16 * sizeof(char));
+// 	memset(returnWord, '\0', 16);
 
+// 	Node *temp = q->first;
+// 	strncpy(returnWord, temp->word, 15);
+// 	returnWord[15] = '\0';
 // 	Node *temp = q->first;
 // 	strncpy(returnWord, temp->word, 15);
 // 	returnWord[15] = '\0';
@@ -430,9 +461,15 @@ unsigned long int getDificult(int level){
 // 	q->first = q->first->next;
 // 	if (q->first == NULL)
 // 		q->last = NULL;
+// 	q->first = q->first->next;
+// 	if (q->first == NULL)
+// 		q->last = NULL;
 
 // 	free(temp);
+// 	free(temp);
 
+// 	return (returnWord);
+// }
 // 	return (returnWord);
 // }
 

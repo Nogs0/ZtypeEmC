@@ -1,0 +1,3 @@
+#!/bin/bash
+
+gcc ztype.c -o output && ./output
