@@ -12,8 +12,6 @@ void recv_sig(int sig) // funcionamento do signal (tratamento de sinais)
 int	main(void) {
 	
 	int descritor, pipe1[2];  
-	
-	int descritor, pipe1[2];  
 
 	if (pipe(pipe1) < 0) {
 		printf("We can't exceute pipe\n");
@@ -29,7 +27,7 @@ int	main(void) {
 	else if (descritor > 0) { // PROCESSO PAI
 		close(pipe1[0]);
 		while (1) {
-			readFromFile(FILE_PATH);
+			readFromFile();
 			send(pipe1[1], buffer);
 			signal(SIGUSR1, recv_sig);
 			pause();
