@@ -32,7 +32,6 @@ int	main(void) {
 			signal(SIGUSR1, recv_sig);
 			pause();
 		}
-		close(pipe1[1]); 
 	}                    
 	else {                 // PROCESSO FILHO
 		close(pipe1[1]); 
@@ -218,7 +217,7 @@ void *fall_word(void *arg){
 }
 
 void print_header(int lifes, int correctWords, int level, unsigned long int dificult, int wordsToChangeDificult, char *color){
-	printf("%sPONTUACAO: %d \t VIDAS: %d NIVEL: %d DIFICULDADE: %ld ALEATORIO: %d %s", "\e[38;5;255m", correctWords, lifes, level, dificult, wordsToChangeDificult, color);
+	printf("%sPONTUACAO: %d \t VIDAS: %d \tNIVEL: %d DIFICULDADE: %ld \tPROXIMA DIFICULDADE EM: %d %s", "\e[38;5;255m", correctWords, lifes, level, dificult, wordsToChangeDificult, color);
 }
 
 int config_next_color(int total_rows, int current_row, char *color){
