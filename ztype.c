@@ -98,7 +98,6 @@ void *graphical_handle(void *arg){
 
 	pthread_t print_word;
 	pthread_t watch_terminal;
-	pthread_t print_header;
 
 	Graphical_handle_arguments *args = (Graphical_handle_arguments *)arg;
 	pthread_mutex_t *mutex = args->mutex;
@@ -182,7 +181,7 @@ void *fall_word(void *arg){
 		}
 
 		if ((*lifes) == 0){
-			printf("Segmentation fault 0x00000000\n eh brinks, ce perdeu mano!\n");
+			printf("\e[38;5;255mSegmentation fault 0x00000000\n\tBrincadeira, ce perdeu mesmo kkkkkk!\n");
 			exit(0);
 		}
 
@@ -389,92 +388,3 @@ unsigned long int getDificult(int level){
 			return DIFICULT_8;
 	}
 }
-
-// Queue	*createQueue(void) {
-// 	Queue	*temp;
-
-// 	// Inicializa fila vazia
-// 	temp = (Queue *)malloc(sizeof(Queue));
-// 	temp->first = temp->last = NULL;
-// 	return (temp);
-// }
-// 	// Inicializa fila vazia
-// 	temp = (Queue *)malloc(sizeof(Queue));
-// 	temp->first = temp->last = NULL;
-// 	return (temp);
-// }
-
-// void	insert(Queue *q, char *input_word) {
-// 	Node	*temp;
-// void	insert(Queue *q, char *input_word) {
-// 	Node	*temp;
-
-// 	temp = (Node *)malloc(sizeof(Node));
-// 	memset(temp->word, '\0', sizeof(temp->word));
-// 	strcpy(temp->word, input_word);
-// 	temp->next = NULL;
-// 	if (q->last == NULL)
-// 	{
-// 		// Primeiro input
-// 		q->first = q->last = temp;
-// 		return ;
-// 	}
-// 	q->last->next = temp;
-// 	q->last = temp;
-// }
-// 	temp = (Node *)malloc(sizeof(Node));
-// 	memset(temp->word, '\0', sizeof(temp->word));
-// 	strcpy(temp->word, input_word);
-// 	temp->next = NULL;
-// 	if (q->last == NULL)
-// 	{
-// 		// Primeiro input
-// 		q->first = q->last = temp;
-// 		return ;
-// 	}
-// 	q->last->next = temp;
-// 	q->last = temp;
-// }
-
-// char *return_new_word(Queue *q) {
-// 	if (q->first == NULL)
-// 		return (NULL);
-// char *return_new_word(Queue *q) {
-// 	if (q->first == NULL)
-// 		return (NULL);
-
-// 	char *returnWord = (char *)malloc(16 * sizeof(char));
-// 	memset(returnWord, '\0', 16);
-// 	char *returnWord = (char *)malloc(16 * sizeof(char));
-// 	memset(returnWord, '\0', 16);
-
-// 	Node *temp = q->first;
-// 	strncpy(returnWord, temp->word, 15);
-// 	returnWord[15] = '\0';
-// 	Node *temp = q->first;
-// 	strncpy(returnWord, temp->word, 15);
-// 	returnWord[15] = '\0';
-
-// 	q->first = q->first->next;
-// 	if (q->first == NULL)
-// 		q->last = NULL;
-// 	q->first = q->first->next;
-// 	if (q->first == NULL)
-// 		q->last = NULL;
-
-// 	free(temp);
-// 	free(temp);
-
-// 	return (returnWord);
-// }
-// 	return (returnWord);
-// }
-
-// int countQueue(Queue *q) {
-//     if (q->first == NULL)
-//         return 0;
-//     int count = 1;
-//     while(q->first->next != NULL)
-//         count++;
-//     return count;
-// }

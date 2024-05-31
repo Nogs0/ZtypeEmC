@@ -13,9 +13,11 @@
  - O jogador possui 5 vidas, que são decrementadas quando uma palavra toca a borda inferior
 
  ## Demonstração
+![alt text](demonstracao.gif)
 ![alt text](image-3.png)
 ![alt text](image-6.png)
 ![alt text](image-5.png)
+
 
 ## Instruções para execução
 > Você pode apenas *rodar* o executável 'ztype', ou se preferir, pode compilar novamente o código
